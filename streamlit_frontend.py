@@ -27,7 +27,7 @@ if user_input:
         st.text(user_input)
 
     res=chatbot.invoke({"messages": [HumanMessage(content=user_input)]}, config=config)
-    ai_msg=res['messages'[-1].content]
+    ai_msg=res['messages'][-1].content
 
     # first add message to message history 
     st.session_state['mesg_his'].append({
