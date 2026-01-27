@@ -21,7 +21,7 @@ def chat_node(state:ChatState):
     # response store state
     return {'messages':[response]}
 
-checkpointer = MemorySaver()
+checkpointer = InMemorySaver()
 
 graph = StateGraph(ChatState)
 graph.add_node("chat_node", chat_node)
