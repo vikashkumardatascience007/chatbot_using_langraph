@@ -1,7 +1,8 @@
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Annotated
 from langchain_core.messages import BaseMessage, HumanMessage
-from langchain_openai import ChatOpenAI
+#from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatOllama
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -13,6 +14,7 @@ import aiosqlite
 import requests
 import asyncio
 import threading
+import sys
 
 load_dotenv()
 
@@ -38,8 +40,10 @@ def submit_async_task(coro):
 # -------------------
 # 1. LLM
 # -------------------
-llm = ChatOpenAI()
-
+llm = ChatOllama(
+    model="mistral:latest",
+    temperature=0.2
+)
 # -------------------
 # 2. Tools
 # -------------------
@@ -61,8 +65,8 @@ client = MultiServerMCPClient(
     {
         "arith": {
             "transport": "stdio",
-            "command": "python3",
-            "args": ["/Users/nitish/Desktop/mcp-math-server/main.py"],
+            "command": sys.executable,
+            "args": ["mcp-client-and-server-langgraph/calculator_mcp_server.py"],
         },
         "expense": {
             "transport": "streamable_http",  # if this fails, try "sse"
@@ -78,11 +82,20 @@ def load_mcp_tools() -> list[BaseTool]:
     except Exception:
         return []
 
+# ----------------this code will work with OpenAI/GROQ online llm model
+# mcp_tools = load_mcp_tools()
+
+# tools = [search_tool, get_stock_price, *mcp_tools]
+# llm_with_tools = llm.bind_tools(tools) if tools else llm
 
 mcp_tools = load_mcp_tools()
 
 tools = [search_tool, get_stock_price, *mcp_tools]
-llm_with_tools = llm.bind_tools(tools) if tools else llm
+
+#  ChatOllama DOES NOT support bind_tools
+# So we pass raw LLM and let ToolNode handle tools
+llm_with_tools = llm
+
 
 # -------------------
 # 3. State
@@ -100,7 +113,9 @@ async def chat_node(state: ChatState):
     return {"messages": [response]}
 
 
-tool_node = ToolNode(tools) if tools else None
+#tool_node = ToolNode(tools) if tools else None
+tool_node = ToolNode(tools)
+
 
 # -------------------
 # 5. Checkpointer

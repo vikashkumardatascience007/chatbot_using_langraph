@@ -3,10 +3,7 @@ from mcp.server.fastmcp import FastMCP
 # ----------------------------------
 # MCP Server (ASYNC)
 # ----------------------------------
-mcp = FastMCP(
-    name="calculator-mcp-async",
-    description="Offline async calculator MCP server with separate tools"
-)
+mcp = FastMCP("calculator-mcp-async")
 
 # ----------------------------------
 # ADD
