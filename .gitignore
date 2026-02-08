@@ -1,4 +1,6 @@
 .venv/
 .env
 chatbpt*
-chatbot*
+chatbot.db
+chatbot.db-shm
+chatbot.db-wal
